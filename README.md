@@ -49,3 +49,9 @@ Template.body.events({
   }
 });
 ```
+
+TODO
+----
+
+- Reactive markers
+- Click event
