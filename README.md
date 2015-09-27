@@ -8,17 +8,23 @@ It comes with built-in reactivity.
 Example
 -------
 
+### HTML
+
 ```HTML
 <div class="map">
   {{> googleMap options=mapOptions centerLat=centerLat centerLng=centerLng zoom=zoom}}
 </div>
 ```````
 
+### CSS
+
 ```CSS
 .map {
   height: 300px;
 }
 ```
+
+### JavaScript (client-side)
 
 ```JavaScript
 Session.setDefault('centerLat', 21.5);
