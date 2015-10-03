@@ -54,7 +54,7 @@ if (Meteor.isClient) {
   });
 
   GoogleMaps.setConfig('helpers.getInfoWindowContent', function(item) {
-    return 'item-' + item._id;
+    return item.name || 'item-' + item._id;
   });
   GoogleMaps.setConfig('helpers.isInfoWindowOpen', function(item) {
     return Session.get('infoWindowShowList').indexOf(item._id) >= 0;

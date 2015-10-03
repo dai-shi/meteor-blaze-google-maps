@@ -102,18 +102,25 @@ Template.googleMap.onRendered(function() {
         });
         Tracker.autorun(function() {
           var item = Items.findOne(itemId);
-          ensureCloseInfoWindow(marker);
           if (defaultConfig.helpers.isInfoWindowOpen(item)) {
-            marker.infoWindow = new google.maps.InfoWindow({
-              content: defaultConfig.helpers.getInfoWindowContent(item)
+            var content = defaultConfig.helpers.getInfoWindowContent(item);
+            marker.infoWindow = marker.infoWindow || new google.maps.InfoWindow({
+              content: content
             });
-            google.maps.event.addListener(marker.infoWindow, 'closeclick', function() {
-              ensureCloseInfoWindow(marker);
-              fireCustomEvent('marker_closeclick', {
-                id: itemId
+            if (marker.infoWindow.getContent() !== content) {
+              marker.infoWindow.setContent(content);
+            }
+            if (!marker.infoWindow.closeclickListener) {
+              marker.infoWindow.closeclickListener = google.maps.event.addListener(marker.infoWindow, 'closeclick', function() {
+                ensureCloseInfoWindow(marker);
+                fireCustomEvent('marker_closeclick', {
+                  id: itemId
+                });
               });
-            });
+            }
             marker.infoWindow.open(template.map, marker);
+          } else {
+            ensureCloseInfoWindow(marker);
           }
         });
       },
