@@ -31,6 +31,11 @@ Items = new Mongo.Collection('items');
 
 if (Meteor.isClient) {
 
+  Session.setDefault('centerLat', 21.5);
+  Session.setDefault('centerLng', -158.0);
+  Session.setDefault('zoom', 3);
+  Session.setDefault('infoWindowShowList', []);
+
   // optional configuration
   GoogleMaps.config({
     options: {
@@ -48,9 +53,12 @@ if (Meteor.isClient) {
     }
   });
 
-  Session.setDefault('centerLat', 21.5);
-  Session.setDefault('centerLng', -158.0);
-  Session.setDefault('zoom', 3);
+  GoogleMaps.setConfig('helpers.getInfoWindowContent', function(item) {
+    return 'item-' + item._id;
+  });
+  GoogleMaps.setConfig('helpers.isInfoWindowOpen', function(item) {
+    return Session.get('infoWindowShowList').indexOf(item._id) >= 0;
+  });
 
   Template.body.helpers({
     mapOptions: {
@@ -86,7 +94,21 @@ if (Meteor.isClient) {
       });
     },
     'marker_click .map': function(event) {
-      console.log('marker clicked', event.originalEvent.detail);
+      var itemId = event.originalEvent.detail.id;
+      var infoWindowShowList = Session.get('infoWindowShowList');
+      if (infoWindowShowList.indexOf(itemId) === -1) {
+        infoWindowShowList.push(itemId);
+        Session.set('infoWindowShowList', infoWindowShowList);
+      }
+    },
+    'marker_closeclick .map': function(event) {
+      var itemId = event.originalEvent.detail.id;
+      var infoWindowShowList = Session.get('infoWindowShowList');
+      var index = infoWindowShowList.indexOf(itemId);
+      if (index >= 0) {
+        infoWindowShowList.splice(index, 1);
+        Session.set('infoWindowShowList', infoWindowShowList);
+      }
     }
   });
 
@@ -96,6 +118,5 @@ if (Meteor.isClient) {
 TODO
 ----
 
-- Marker info window
 - Draggable markers
 - Marker icon

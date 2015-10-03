@@ -1,6 +1,6 @@
 Package.describe({
   name: 'daishi:blaze-google-maps',
-  version: '0.0.2',
+  version: '0.0.3',
   summary: 'Easy Blaze template for Google Maps with reactivity',
   git: 'https://github.com/dai-shi/meteor-blaze-google-maps',
   documentation: 'README.md'
@@ -15,6 +15,7 @@ Package.onUse(function(api) {
   api.use('ecmascript');
   api.use('templating');
   api.use('underscore');
+  api.use('tracker');
   api.use('cosmos:browserify@0.7.0', 'client');
   api.addFiles(['client.browserify.js', 'blaze-google-maps.html', 'blaze-google-maps.js'], 'client');
   api.export('GoogleMaps', 'client');

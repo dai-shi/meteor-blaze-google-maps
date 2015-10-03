@@ -11,6 +11,14 @@ var defaultConfig = {
       lat: 'lat',
       lng: 'lng'
     }
+  },
+  helpers: {
+    getInfoWindowContent: function(item) {
+      return item.name || 'empty';
+    },
+    isInfoWindowOpen: function(item) {
+      return !!item.name;
+    }
   }
 };
 
@@ -18,6 +26,9 @@ GoogleMaps = {};
 
 GoogleMaps.config = function(config) {
   _.extend(defaultConfig, config);
+};
+GoogleMaps.setConfig = function(key, value) {
+  dot.set(defaultConfig, key, value);
 };
 
 Template.googleMap.onRendered(function() {
@@ -44,6 +55,14 @@ Template.googleMap.onRendered(function() {
     element.dispatchEvent(event);
   };
 
+  var ensureCloseInfoWindow = function(marker) {
+    if (marker.infoWindow) {
+      marker.infoWindow.close();
+      google.maps.event.clearInstanceListeners(marker.infoWindow);
+      delete marker.infoWindow;
+    }
+  };
+
   template.map = new google.maps.Map(element, options);
 
   template.autorun(function() {
@@ -65,32 +84,50 @@ Template.googleMap.onRendered(function() {
     template.markers = {};
     Items.find().observe({
       added: function(item) {
+        var itemId = item._id;
         var lat = dot.get(item, defaultConfig.attrs.marker.lat);
         var lng = dot.get(item, defaultConfig.attrs.marker.lng);
         var markerOpts = {
           draggable: false,
           position: new google.maps.LatLng(lat, lng),
           map: template.map,
-          id: item._id
+          id: itemId
         };
         var marker = new google.maps.Marker(markerOpts);
+        template.markers[itemId] = marker;
         google.maps.event.addListener(marker, 'click', function() {
           fireCustomEvent('marker_click', {
-            id: item._id
+            id: itemId
           });
         });
-        template.markers[item._id] = marker;
+        Tracker.autorun(function() {
+          var item = Items.findOne(itemId);
+          ensureCloseInfoWindow(marker);
+          if (defaultConfig.helpers.isInfoWindowOpen(item)) {
+            marker.infoWindow = new google.maps.InfoWindow({
+              content: defaultConfig.helpers.getInfoWindowContent(item)
+            });
+            google.maps.event.addListener(marker.infoWindow, 'closeclick', function() {
+              ensureCloseInfoWindow(marker);
+              fireCustomEvent('marker_closeclick', {
+                id: itemId
+              });
+            });
+            marker.infoWindow.open(template.map, marker);
+          }
+        });
       },
-      changed: function(newItem) {
-        template.markers[newItem._id].setPosition(new google.maps.LatLng(
-          newItem.lat,
-          newItem.lng
-        ));
+      changed: function(item) {
+        var lat = dot.get(item, defaultConfig.attrs.marker.lat);
+        var lng = dot.get(item, defaultConfig.attrs.marker.lng);
+        template.markers[item._id].setPosition(new google.maps.LatLng(lat, lng));
       },
-      removed: function(oldItem) {
-        template.markers[oldItem._id].setMap(null);
-        google.maps.event.clearInstanceListeners(template.markers[oldItem._id]);
-        delete template.markers[oldItem._id];
+      removed: function(item) {
+        var marker = template.markers[item._id];
+        ensureCloseInfoWindow(marker);
+        marker.setMap(null);
+        google.maps.event.clearInstanceListeners(marker);
+        delete template.markers[item._id];
       }
     });
   }
