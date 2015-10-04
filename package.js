@@ -11,7 +11,7 @@ Package.onUse(function(api) {
   api.use('ecmascript');
   api.use('templating');
   api.use('tracker');
-  api.use('adelevie:meteor-lodash', 'client');
+  api.use('adelevie:meteor-lodash@3.10.1', 'client');
   api.addFiles(['blaze-google-maps.html', 'blaze-google-maps.js'], 'client');
   api.export('GoogleMaps', 'client');
 });
