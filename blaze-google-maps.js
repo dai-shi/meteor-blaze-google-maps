@@ -9,7 +9,8 @@ var defaultConfig = {
   attrs: {
     marker: {
       lat: 'lat',
-      lng: 'lng'
+      lng: 'lng',
+      draggable: 'draggable'
     }
   },
   helpers: {
@@ -25,26 +26,23 @@ var defaultConfig = {
 GoogleMaps = {};
 
 GoogleMaps.config = function(config) {
-  _.extend(defaultConfig, config);
+  lodash.merge(defaultConfig, config);
 };
 GoogleMaps.setConfig = function(key, value) {
-  dot.set(defaultConfig, key, value);
+  lodash.set(defaultConfig, key, value);
 };
 
 Template.googleMap.onRendered(function() {
   var template = this;
   var data = template.data || {};
   var element = template.firstNode;
-  var options = _.extend({}, defaultConfig.options, data.options || {});
-  if (typeof data.centerLat === 'number') {
-    options.center.lat = data.centerLat;
-  }
-  if (typeof data.centerLng === 'number') {
-    options.center.lng = data.centerLng;
-  }
-  if (typeof data.zoom === 'number') {
-    options.zoom = data.zoom;
-  }
+  var options = lodash.merge({}, defaultConfig.options, data.options || {}, {
+    center: {
+      lat: data.centerLat,
+      lng: data.centerLng
+    },
+    zoom: data.zoom
+  });
 
   var fireCustomEvent = function(name, detail) {
     var event = new CustomEvent(name, {
@@ -85,10 +83,11 @@ Template.googleMap.onRendered(function() {
     Items.find().observe({
       added: function(item) {
         var itemId = item._id;
-        var lat = dot.get(item, defaultConfig.attrs.marker.lat);
-        var lng = dot.get(item, defaultConfig.attrs.marker.lng);
+        var lat = lodash.get(item, defaultConfig.attrs.marker.lat);
+        var lng = lodash.get(item, defaultConfig.attrs.marker.lng);
+        var draggable = typeof defaultConfig.attrs.marker.draggable === 'boolean' ? defaultConfig.attrs.marker.draggable : lodash.get(item, defaultConfig.attrs.marker.draggable);
         var markerOpts = {
-          draggable: false,
+          draggable: draggable,
           position: new google.maps.LatLng(lat, lng),
           map: template.map,
           id: itemId
@@ -100,23 +99,30 @@ Template.googleMap.onRendered(function() {
             id: itemId
           });
         });
+        google.maps.event.addListener(marker, 'dragend', function() {
+          fireCustomEvent('marker_dragend', {
+            id: itemId,
+            lat: marker.getPosition().lat(),
+            lng: marker.getPosition().lng()
+          });
+        });
         Tracker.autorun(function() {
           var item = Items.findOne(itemId);
           if (defaultConfig.helpers.isInfoWindowOpen(item)) {
             var content = defaultConfig.helpers.getInfoWindowContent(item);
-            marker.infoWindow = marker.infoWindow || new google.maps.InfoWindow({
-              content: content
-            });
-            if (marker.infoWindow.getContent() !== content) {
-              marker.infoWindow.setContent(content);
-            }
-            if (!marker.infoWindow.closeclickListener) {
-              marker.infoWindow.closeclickListener = google.maps.event.addListener(marker.infoWindow, 'closeclick', function() {
+            if (!marker.infoWindow) {
+              marker.infoWindow = new google.maps.InfoWindow({
+                content: content
+              });
+              google.maps.event.addListener(marker.infoWindow, 'closeclick', function() {
                 ensureCloseInfoWindow(marker);
                 fireCustomEvent('marker_closeclick', {
                   id: itemId
                 });
               });
+            }
+            if (marker.infoWindow.getContent() !== content) {
+              marker.infoWindow.setContent(content);
             }
             marker.infoWindow.open(template.map, marker);
           } else {
@@ -125,9 +131,11 @@ Template.googleMap.onRendered(function() {
         });
       },
       changed: function(item) {
-        var lat = dot.get(item, defaultConfig.attrs.marker.lat);
-        var lng = dot.get(item, defaultConfig.attrs.marker.lng);
+        var lat = lodash.get(item, defaultConfig.attrs.marker.lat);
+        var lng = lodash.get(item, defaultConfig.attrs.marker.lng);
+        var draggable = typeof defaultConfig.attrs.marker.draggable === 'boolean' ? defaultConfig.attrs.marker.draggable : lodash.get(item, defaultConfig.attrs.marker.draggable);
         template.markers[item._id].setPosition(new google.maps.LatLng(lat, lng));
+        template.markers[item._id].setDraggable(draggable);
       },
       removed: function(item) {
         var marker = template.markers[item._id];

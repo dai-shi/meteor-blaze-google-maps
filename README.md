@@ -48,7 +48,8 @@ if (Meteor.isClient) {
     attrs: {
       marker: {
         lat: 'lat',
-        lng: 'lng'
+        lng: 'lng',
+        draggable: 'draggable'
       }
     }
   });
@@ -90,7 +91,8 @@ if (Meteor.isClient) {
       var lng = event.originalEvent.detail.lng;
       Items.insert({
         lat: lat,
-        lng: lng
+        lng: lng,
+        draggable: true
       });
     },
     'marker_click .map': function(event) {
@@ -109,6 +111,17 @@ if (Meteor.isClient) {
         infoWindowShowList.splice(index, 1);
         Session.set('infoWindowShowList', infoWindowShowList);
       }
+    },
+    'marker_dragend .map': function(event) {
+      var itemId = event.originalEvent.detail.id;
+      var lat = event.originalEvent.detail.lat;
+      var lng = event.originalEvent.detail.lng;
+      Items.update(itemId, {
+        $set: {
+          lat: lat,
+          lng: lng
+        }
+      });
     }
   });
 
@@ -118,5 +131,4 @@ if (Meteor.isClient) {
 TODO
 ----
 
-- Draggable markers
 - Marker icon
