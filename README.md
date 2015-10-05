@@ -34,7 +34,6 @@ if (Meteor.isClient) {
   Session.setDefault('centerLat', 21.5);
   Session.setDefault('centerLng', -158.0);
   Session.setDefault('zoom', 3);
-  Session.setDefault('infoWindowShowList', []);
 
   // optional configuration
   GoogleMaps.config({
@@ -45,12 +44,15 @@ if (Meteor.isClient) {
       },
       zoom: 5
     },
-    attrs: {
-      marker: {
-        lat: 'lat',
-        lng: 'lng',
-        draggable: 'draggable'
-      }
+    markerOptions: {
+      draggable: false,
+      icon: null
+    },
+    markerAttrs: {
+      lat: 'lat',
+      lng: 'lng',
+      draggable: 'draggable',
+      icon: 'icon'
     }
   });
 
@@ -58,7 +60,7 @@ if (Meteor.isClient) {
     return item.name || 'item-' + item._id;
   });
   GoogleMaps.setConfig('helpers.isInfoWindowOpen', function(item) {
-    return Session.get('infoWindowShowList').indexOf(item._id) >= 0;
+    return Session.get('infoWindowShow-' + item._id);
   });
 
   Template.body.helpers({
@@ -92,25 +94,17 @@ if (Meteor.isClient) {
       Items.insert({
         lat: lat,
         lng: lng,
-        draggable: true
+        draggable: true,
+        icon: 'http://chart.apis.google.com/chart?chst=d_map_pin_letter&chld=' + Math.floor(Math.random() * 10) + '|FF0000|FFFFFF'
       });
     },
     'marker_click .map': function(event) {
       var itemId = event.originalEvent.detail.id;
-      var infoWindowShowList = Session.get('infoWindowShowList');
-      if (infoWindowShowList.indexOf(itemId) === -1) {
-        infoWindowShowList.push(itemId);
-        Session.set('infoWindowShowList', infoWindowShowList);
-      }
+      Session.set('infoWindowShow-' + itemId, true);
     },
     'marker_closeclick .map': function(event) {
       var itemId = event.originalEvent.detail.id;
-      var infoWindowShowList = Session.get('infoWindowShowList');
-      var index = infoWindowShowList.indexOf(itemId);
-      if (index >= 0) {
-        infoWindowShowList.splice(index, 1);
-        Session.set('infoWindowShowList', infoWindowShowList);
-      }
+      Session.set('infoWindowShow-' + itemId, false);
     },
     'marker_dragend .map': function(event) {
       var itemId = event.originalEvent.detail.id;
@@ -127,8 +121,3 @@ if (Meteor.isClient) {
 
 }
 ```
-
-TODO
-----
-
-- Marker icon
