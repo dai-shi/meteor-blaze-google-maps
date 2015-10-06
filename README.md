@@ -28,7 +28,7 @@ Markers are a collection with special properties.
 - icon: string for icon url of the marker (reactive value)
 
 The name (or path) of these properties are configurable, for example:
-`GoogleMaps.setConfig('markerAttrs.icon' , 'icon.url')`
+`GoogleMaps.setConfig('markerAttrs.icon', 'icon.url')`
 
 ### InfoWindow
 
@@ -45,7 +45,7 @@ There are two helper functions for InfoWindow. See the example section below.
 
 All events have detail information. See the example section below.
 
-### Configutation
+### Configuration
 
 The default configuration can be changed by `GoogleMaps.config()`
 like the following.
