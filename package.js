@@ -1,6 +1,6 @@
 Package.describe({
   name: 'daishi:blaze-google-maps',
-  version: '0.0.5',
+  version: '0.1.0',
   summary: 'Easy Blaze template for Google Maps with reactivity',
   git: 'https://github.com/dai-shi/meteor-blaze-google-maps',
   documentation: 'README.md'

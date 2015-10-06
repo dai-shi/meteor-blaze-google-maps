@@ -5,15 +5,94 @@ This is a Meteor package to provide
 easy Blaze template to Google Maps.
 It comes with built-in reactivity.
 
+How to use
+----------
+
+### Template
+
+    {{> googleMap [options=...] [centerLat=...] [centerLng=...] [zoom=...] [markers=...]}}
+
+Template data:
+- options: `google.maps.MapOptions` (not reactive)
+- centerLat: float number for latitude of the map center (reactive value)
+- centerLng: float number for longitude of the map center (reactive value)
+- zoom: integer number for zoom (reactive value)
+- markers: `Mongo.Cursor` for markers (reactive list with some reactive properties)
+
+### Markers
+
+Markers are a collection with special properties.
+- lat: float number for latitude of the marker (reactive value)
+- lng: float number for longitude of the marker (reactive value)
+- draggable: boolean if the marker is draggable (reactie value)
+- icon: string for icon url of the marker (reactive value)
+
+The name (or path) of these properties are configurable, for example:
+`GoogleMaps.setConfig('markerAttrs.icon' , 'icon.url')`
+
+### InfoWindow
+
+There are two helper functions for InfoWindow. See the example section below.
+
+### Events
+
+- center\_changed: when the map center is changed
+- zoom\_changed: when the map zoom is changed
+- map\_click: when the map is clicked
+- marker\_click: when a marker is clicked
+- marker\_closeclick: when InfoWindow of a marker is closed
+- marker\_dragend: when a marker is dragged 
+
+All events have detail information. See the example section below.
+
+### Configutation
+
+The default configuration can be changed by `GoogleMaps.config()`
+like the following.
+
+```JavaScript
+GoogleMaps.config({
+  options: {
+    center: {
+      lat: 0,
+      lng: 0
+    },
+    zoom: 0
+  },
+  markerOptions: {
+    draggable: false,
+    icon: null
+  },
+  markerAttrs: {
+    lat: 'lat',
+    lng: 'lng',
+    draggable: 'draggable',
+    icon: 'icon'
+  },
+  helpers: {
+    getInfoWindowContent: function(item) {
+      return item.name || 'empty';
+    },
+    isInfoWindowOpen: function(item) {
+      return !!item.name;
+    }
+  }
+});
+```
+
+You can also use `GoogleMaps.setConfig()`. See the example section below.
+
 Example
 -------
 
 ### HTML
 
 ```HTML
-<div class="map">
-  {{> googleMap options=mapOptions centerLat=centerLat centerLng=centerLng zoom=zoom}}
-</div>
+<template name="mymap">
+  <div class="map">
+    {{> googleMap centerLat=centerLat centerLng=centerLng zoom=zoom markers=items}}
+  </div>
+</template>
 ```````
 
 ### CSS
@@ -35,27 +114,6 @@ if (Meteor.isClient) {
   Session.setDefault('centerLng', -158.0);
   Session.setDefault('zoom', 3);
 
-  // optional configuration
-  GoogleMaps.config({
-    options: {
-      center: {
-        lat: 0,
-        lng: 0
-      },
-      zoom: 5
-    },
-    markerOptions: {
-      draggable: false,
-      icon: null
-    },
-    markerAttrs: {
-      lat: 'lat',
-      lng: 'lng',
-      draggable: 'draggable',
-      icon: 'icon'
-    }
-  });
-
   GoogleMaps.setConfig('helpers.getInfoWindowContent', function(item) {
     return item.name || 'item-' + item._id;
   });
@@ -63,10 +121,7 @@ if (Meteor.isClient) {
     return Session.get('infoWindowShow-' + item._id);
   });
 
-  Template.body.helpers({
-    mapOptions: {
-      backgroundColor: 'lightblue'
-    },
+  Template.mymap.helpers({
     centerLat: function() {
       return Session.get('centerLat');
     },
@@ -81,7 +136,7 @@ if (Meteor.isClient) {
     }
   });
 
-  Template.body.events({
+  Template.mymap.events({
     'center_changed .map': function(event) {
       console.log('center changed', event.originalEvent.detail);
     },
