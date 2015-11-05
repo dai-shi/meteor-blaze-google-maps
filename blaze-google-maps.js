@@ -83,7 +83,7 @@ Template.googleMap.onRendered(function() {
 
   if (data.markers instanceof Mongo.Cursor) {
     template.markers = {};
-    data.markers.find().observe({
+    data.markers.observe({
       added: function(item) {
         var itemId = item._id;
         var lat = lodash.get(item, defaultConfig.markerAttrs.lat);
@@ -112,7 +112,6 @@ Template.googleMap.onRendered(function() {
           });
         });
         Tracker.autorun(function() {
-          var item = data.markers.findOne(itemId);
           if (defaultConfig.helpers.isInfoWindowOpen(item)) {
             var content = defaultConfig.helpers.getInfoWindowContent(item);
             if (!marker.infoWindow) {
