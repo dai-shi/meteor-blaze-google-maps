@@ -1,9 +1,13 @@
 blaze-google-maps (Meteor)
 ==========================
 
-This is a Meteor package to provide
-easy Blaze template to Google Maps.
-It comes with built-in reactivity.
+This is a Meteor package to provide easy Blaze template to Google Maps.  It comes with built-in reactivity.
+
+Demo
+----
+
+A working demo is available [here](http://google-maps-example.meteor.com/)
+and the code is [here](https://github.com/dai-shi/meteor-google-maps-example)
 
 How to use
 ----------
