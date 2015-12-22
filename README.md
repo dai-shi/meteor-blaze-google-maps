@@ -7,7 +7,7 @@ Demo
 ----
 
 A working demo is available [here](http://google-maps-example.meteor.com/)
-and the code is [here](https://github.com/dai-shi/meteor-google-maps-example)
+and its source code is [here](https://github.com/dai-shi/meteor-google-maps-example)
 
 How to use
 ----------
