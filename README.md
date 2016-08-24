@@ -12,6 +12,17 @@ and its source code is [here](https://github.com/dai-shi/meteor-google-maps-exam
 How to use
 ----------
 
+### Header
+
+Add the script tag in your HTML header.
+
+```
+<head>
+  <script type="text/javascript" src="https://maps.googleapis.com/maps/api/js?key=YOUR_API_KEY">
+  </script>
+</head>
+```
+
 ### Template
 
     {{> googleMap [options=...] [centerLat=...] [centerLng=...] [zoom=...] [markers=...]}}
